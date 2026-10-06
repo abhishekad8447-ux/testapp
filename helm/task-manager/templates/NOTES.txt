@@ -1,0 +1,13 @@
+Your Task Manager application is deployed.
+
+For Minikube:
+
+  minikube service {{ include "task-manager.fullname" . }} --url
+
+Or:
+
+  kubectl get svc {{ include "task-manager.fullname" . }}
+
+Health endpoint:
+
+  /health

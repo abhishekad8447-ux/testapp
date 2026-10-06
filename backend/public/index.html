@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task Manager</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <main class="container">
+    <h1>Task Manager</h1>
+    <p class="subtitle">Docker + PostgreSQL + Kubernetes + Helm</p>
+
+    <form id="task-form">
+      <input id="title" type="text" placeholder="Task title" required maxlength="200">
+      <input id="description" type="text" placeholder="Description">
+      <button type="submit">Add Task</button>
+    </form>
+
+    <div id="status"></div>
+    <section id="tasks"></section>
+  </main>
+
+  <script>
+    const form = document.getElementById("task-form");
+    const tasksEl = document.getElementById("tasks");
+    const statusEl = document.getElementById("status");
+
+    function escapeHtml(value) {
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+    async function loadTasks() {
+      const response = await fetch("/api/tasks");
+      const tasks = await response.json();
+
+      tasksEl.innerHTML = tasks.map(task => `
+        <article class="task ${task.completed ? "completed" : ""}">
+          <div>
+            <h3>${escapeHtml(task.title)}</h3>
+            <p>${escapeHtml(task.description || "")}</p>
+          </div>
+          <div class="actions">
+            <button onclick="toggleTask(${task.id}, ${!task.completed})">
+              ${task.completed ? "Undo" : "Complete"}
+            </button>
+            <button class="delete" onclick="deleteTask(${task.id})">Delete</button>
+          </div>
+        </article>
+      `).join("");
+    }
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+
+      const title = document.getElementById("title").value;
+      const description = document.getElementById("description").value;
+
+      const response = await fetch("/api/tasks", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title, description })
+      });
+
+      if (response.ok) {
+        form.reset();
+        statusEl.textContent = "Task added.";
+        await loadTasks();
+      } else {
+        statusEl.textContent = "Could not add task.";
+      }
+    });
+
+    async function toggleTask(id, completed) {
+      await fetch(`/api/tasks/${id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ completed })
+      });
+      await loadTasks();
+    }
+
+    async function deleteTask(id) {
+      await fetch(`/api/tasks/${id}`, { method: "DELETE" });
+      await loadTasks();
+    }
+
+    loadTasks();
+  </script>
+</body>
+</html>

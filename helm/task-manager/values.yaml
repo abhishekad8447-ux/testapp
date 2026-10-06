@@ -1,0 +1,27 @@
+replicaCount: 1
+
+image:
+  repository: task-manager
+  tag: v1
+  pullPolicy: IfNotPresent
+
+service:
+  type: NodePort
+  port: 8080
+  targetPort: 8080
+  nodePort: 30080
+
+database:
+  image: postgres:16-alpine
+  database: tasks
+  username: taskuser
+  password: taskpass
+  storage: 1Gi
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
