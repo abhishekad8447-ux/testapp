@@ -6,7 +6,7 @@ pipeline {
         AWS_REGION = 'ap-south-1'
         ECR_REPOSITORY = '789130777577.dkr.ecr.ap-south-1.amazonaws.com/task-manager'
         IMAGE_TAG = "${BUILD_NUMBER}"
-        HELM_CHART = '/opt/task-manager-gitops/task-manager'
+        HELM_CHART = './helm/task-manager'
     }
 
     stages {
